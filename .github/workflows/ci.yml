@@ -35,9 +35,9 @@ jobs:
           python-version: 3.9
 
       # Install dependencies
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r flask_app/requirements.txt
           pip install safety pytest selenium
 
       # Run dependency check using Safety
@@ -69,6 +69,22 @@ jobs:
             -e SONAR_PASSWORD="2301837@sit.singaporetech.edu.sg" \
             -v $(pwd):/usr/src \
             sonarsource/sonar-scanner-cli
+
+      # Install Node.js and ESLint with security plugin
+      - name: Set up Node.js and ESLint with security plugin
+        run: |
+          # Install Node.js
+          curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          
+          # Install ESLint and eslint-plugin-security
+          npm install eslint eslint-plugin-security
+
+      # Run ESLint to check for security vulnerabilities
+      - name: Run ESLint security scan
+        run: |
+          # Initialize ESLint (if necessary) and run the security scan
+          npx eslint --plugin security --rule "security/detect-object-injection: error" . --ext .js,.jsx,.ts,.tsx
 
       # Commit changes to local Git repo inside Docker container
       - name: Commit changes to local Git repo inside Docker container
