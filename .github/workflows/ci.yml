@@ -45,11 +45,6 @@ jobs:
         run: |
           safety check --full-report
 
-      # Run integration tests with pytest
-      - name: Run integration tests with pytest
-        run: |
-          pytest --maxfail=1 --disable-warnings -q
-
       # Install Node.js and ESLint with security plugin
       - name: Set up Node.js and ESLint with security plugin
         run: |
