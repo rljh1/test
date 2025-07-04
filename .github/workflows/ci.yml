@@ -50,26 +50,6 @@ jobs:
         run: |
           pytest --maxfail=1 --disable-warnings -q
 
-      # Run UI tests with Selenium (assumes you have UI tests in 'tests/ui_tests')
-      - name: Run UI tests with Selenium
-        run: |
-          python -m unittest discover -s tests/ui_tests
-
-      # Start Flask app in the background for UI testing
-      - name: Start Flask app
-        run: |
-          nohup flask run --host=0.0.0.0 --port=5000 &
-
-      # Start SonarQube Analysis
-      - name: Run SonarQube scan
-        run: |
-          docker run --rm \
-            -e SONAR_HOST_URL="http://localhost:9000" \
-            -e SONAR_LOGIN="admin" \
-            -e SONAR_PASSWORD="2301837@sit.singaporetech.edu.sg" \
-            -v $(pwd):/usr/src \
-            sonarsource/sonar-scanner-cli
-
       # Install Node.js and ESLint with security plugin
       - name: Set up Node.js and ESLint with security plugin
         run: |
@@ -85,6 +65,34 @@ jobs:
         run: |
           # Initialize ESLint (if necessary) and run the security scan
           npx eslint --plugin security --rule "security/detect-object-injection: error" . --ext .js,.jsx,.ts,.tsx
+
+      # Start Flask app in the background
+      - name: Start Flask app
+        run: |
+          nohup flask run --host=0.0.0.0 --port=5000 &
+
+      # Wait for Flask to be ready (check with curl)
+      - name: Wait for Flask app to be ready
+        run: |
+          # Wait for the Flask server to be up and running (check if it's accessible)
+          for i in {1..30}; do
+            curl -s http://localhost:5000 && break || sleep 5;
+          done
+
+      # Run UI tests with Selenium (assumes you have UI tests in 'tests/ui_tests')
+      - name: Run UI tests with Selenium
+        run: |
+          python -m unittest discover -s tests/ui_tests
+
+      # Start SonarQube Analysis
+      - name: Run SonarQube scan
+        run: |
+          docker run --rm \
+            -e SONAR_HOST_URL="http://localhost:9000" \
+            -e SONAR_LOGIN="admin" \
+            -e SONAR_PASSWORD="2301837@sit.singaporetech.edu.sg" \
+            -v $(pwd):/usr/src \
+            sonarsource/sonar-scanner-cli
 
       # Commit changes to local Git repo inside Docker container
       - name: Commit changes to local Git repo inside Docker container
